@@ -9,6 +9,7 @@ __all__ = ['multiline',
 # standard library
 import re
 from functools import wraps
+from itertools import chain
 from logging import getLogger
 
 # module logging
@@ -25,11 +26,19 @@ def multiline(func):
     line. In addition to parameters of the original function, the wrapped one
     has special parameters that controls range wherein the function is applied:
 
-    first (str): Regular expression for the first line of range. Default is None.
-    last (str):  Regular expression for the last line of range. Default is None.
-    line (str): Alias of `first`. If both `first` and `line` is spacified,
-        the latter one is ignored. Default is None.
-    nskip (int): Number of times matching of `first` is ignored. Default is 0.
+    first (str): Regular expression for the first line of range.
+        Default is '.*' (it matches everything and thus means no range).
+    last (str):  Regular expression for the last line of range.
+        Default is '$.' (it matches nothing and thus means no range).
+    line (str): Regular expression for lines to which the function is applied.
+        Default is '.*' (it matches everything and thus means no selection).
+    nmatch (int): Number of matchings of `first` from which the function is
+        applied, i.e., 1st, ..., `nmatch`-1 th matchings of `first` are ignored.
+        Default is 1 (1st matching of `first` is used).
+    nskip (int): Number of lines to which the function is not applied after
+        matching of `first`. Default is 0 (not skipping lines).
+    exlast (bool): Whether the function is applied to the last line.
+        Default is False (the last line is included within a range).
 
     Args:
         func (function): Function to be wrapped.
@@ -44,47 +53,55 @@ def multiline(func):
         args  = args[1:]
 
         # special parameters
-        first = kwargs.pop('first', None)
-        last  = kwargs.pop('last', None)
-        line_ = kwargs.pop('line', None)
-        nskip = kwargs.pop('nskip', 0)
+        first  = kwargs.pop('first', '.*')
+        last   = kwargs.pop('last', '$.')
+        line_  = kwargs.pop('line', '.*')
+        nmatch = kwargs.pop('nmatch', 1)
+        nskip  = kwargs.pop('nskip', 0)
+        exlast = kwargs.pop('exlast', False)
 
-        # line is alias of first
-        if first is None:
-            first = line_
-
-        if first is None:
-            first = '.*' # matches everything
-            last  = '$.' # matches nothing
-            nskip = 0
-
-        # not applying func until first line is matched
+        # not applying func before first line is matched
         newlines = []
-        count = 0
+        counter = 1
 
         for line in lines:
             if not re.search(first, line):
                 newlines.append(line)
                 continue
 
-            if not count == nskip:
+            if not counter == nmatch:
                 newlines.append(line)
-                count += 1
+                counter += 1
                 continue
 
-            newlines.append(func(line, *args, **kwargs))
+            # undo an iteration
+            lines = chain([line], lines)
             break
 
-        # single line mode
-        if last is None or last == first:
-            return '\n'.join(newlines + list(lines))
+        # skip line nskip times
+        for i in range(nskip):
+            line = next(lines, None)
+
+            if line is not None:
+                newlines.append(line)
 
         # applying func until last line is matched
         for line in lines:
-            newlines.append(func(line, *args, **kwargs))
+            if not re.search(line_, line):
+                newlines.append(line)
+                continue
 
-            if re.search(last, line):
+            if not re.search(last, line):
+                newlines.append(func(line, *args, **kwargs))
+                continue
+
+            if not exlast:
+                newlines.append(func(line, *args, **kwargs))
                 break
+
+            # undo an iteration
+            lines = chain([line], lines)
+            break
 
         return '\n'.join(newlines + list(lines))
 
