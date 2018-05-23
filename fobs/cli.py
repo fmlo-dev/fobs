@@ -4,16 +4,16 @@
 """fobs: convert 45m/ASTE obstable to one for FMLO observation.
 
 Usage:
-  fobs <obstable> <actions> [<statement>...] [options]
+  fobs <obstable> <actions> [<substitution>...] [options]
   fobs -h | --help
   fobs -v | --version
 
 Arguments:
-  <obstable>       Path of 45/ASTE obstable (*.start)
-  <actions>        Path of YAML file that describes actions.
-  <statement>...   String(s) of statement like param=value.
-                   This will replace string of <param> with
-                   value in the converted obstable at the end.
+  <obstable>         Path of 45/ASTE obstable (*.start)
+  <actions>          Path of YAML file that describes actions.
+  <substitution>...  String(s) of substitution statement like
+                     param=value. This will replace string of
+                     <param> with value in the converted obstable.
 
 Options:
   -h --help        Show the help and exit.
@@ -76,7 +76,7 @@ def main(args=None):
         func = getattr(fobs, kwargs.pop('action'))
         lines = func(lines, **kwargs)
 
-    for state in args['<statement>']:
+    for state in args['<substitution>']:
         try:
             param, value = state.split('=')
         except ValueError:
