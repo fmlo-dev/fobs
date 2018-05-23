@@ -95,12 +95,12 @@ def multiline(func):
                 newlines.append(func(line, *args, **kwargs))
                 continue
 
-            if not exlast:
-                newlines.append(func(line, *args, **kwargs))
+            if exlast:
+                # undo an iteration
+                lines = chain([line], lines)
                 break
 
-            # undo an iteration
-            lines = chain([line], lines)
+            newlines.append(func(line, *args, **kwargs))
             break
 
         return '\n'.join(newlines + list(lines))
