@@ -130,13 +130,13 @@ def insert(line, string, position='below'):
 
 
 @multiline
-def delete(line, mode='remove', mark='#'):
+def delete(line, mode='comment out', mark='#'):
     """Comment out line.
 
     Args:
         line (str): Line to be processed.
-        mode (str): Deletion mode. Must be either 'remove' (cut whole line)
-            or 'comment out' (insert mark to line head). Default is 'remove'.
+        mode (str): Deletion mode. Must be either 'remove' (cut whole line) or
+            'comment out' (insert mark to line head). Default is 'comment out'.
         mark (str): Comment mark used in the comment out mode. Default is '#'.
 
     Returns:
@@ -146,7 +146,10 @@ def delete(line, mode='remove', mark='#'):
     if mode == 'remove':
         return ''
     elif mode == 'comment out':
-        return f'{mark} {line}'
+        if re.search(f'^{mark}', line):
+            return line
+        else:
+            return f'{mark} {line}'
     else:
         return line
 
