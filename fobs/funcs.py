@@ -100,6 +100,10 @@ def multiline(func):
                 lines = chain([line], lines)
                 break
 
+            if not re.search(line_, line):
+                newlines.append(line)
+                break
+
             newlines.append(func(line, *args, **kwargs))
             break
 
