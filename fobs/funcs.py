@@ -87,11 +87,11 @@ def multiline(func):
 
         # applying func until last line is matched
         for line in lines:
-            if not re.search(line_, line):
-                newlines.append(line)
-                continue
-
             if not re.search(last, line):
+                if not re.search(line_, line):
+                    newlines.append(line)
+                    continue
+
                 newlines.append(func(line, *args, **kwargs))
                 continue
 
