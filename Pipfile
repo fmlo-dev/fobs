@@ -1,0 +1,22 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[packages]
+docopt = "*"
+pyyaml = "*"
+
+[dev-packages]
+ipython = "*"
+numpy = "*"
+twine = "*"
+
+[requires]
+python_version = "3.6"
+
+[scripts]
+ipython = "ipython"
+configure = "etc/configure"
+distribute = "etc/distribute"
+fobs = "python fobs/cli.py"

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+PROJ=`pipenv --where`
+
+# Write environment variables to .env
+echo PYTHONPATH=${PROJ} >> .env
+echo IPYTHONDIR=${PROJ}/.ipython >> .env
+
+# Create IPython profile
+mkdir -p .ipython
+ipython profile create default --ipython-dir .ipython
+
+# Create IPython startup
+cat << EOS > $IPYTHONDIR/profile_default/startup/00.py
+import re
+import os
+import sys
+import numpy as np
+from pathlib import Path
+EOS
